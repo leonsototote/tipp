@@ -1,0 +1,99 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-input/iron-input.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="date-validator.html">
+
+<dom-module id="date-input">
+    <template>
+
+        <style>
+            :host {
+                display: inline-block;
+            }
+
+            :host([hidden]) {
+                display: none !important;
+            }
+
+            input[is="iron-input"] {
+                font: inherit;
+                outline: none;
+                box-shadow: none;
+                border: none;
+                width: auto;
+                text-align: center;
+            }
+
+            .container {
+                @apply(--layout-horizontal);
+            }
+        </style>
+
+        <date-validator></date-validator>
+
+        <div class="container">
+
+            <input is="iron-input" name="dateDay" maxlength="2" bind-value="{{_date1}}" size="2" aria-label="Dia">
+            -
+            <input is="iron-input" name="dateMonth" maxlength="2" bind-value="{{_date2}}" size="2" aria-label="Mes">
+            -
+            <input is="iron-input" name="dateYear" maxlength="4" bind-value="{{_date3}}" size="4" aria-label="Año">
+
+            <input is="iron-input" name="date" id="date" style="display: none">
+
+        </div>
+
+    </template>
+</dom-module>
+
+<script>
+    Polymer({
+        is: 'date-input',
+
+        behaviors: [
+            Polymer.IronValidatableBehavior
+        ],
+
+        properties: {
+            value: {
+                notify: true,
+                type: String
+            },
+
+            _date1: {
+                type: String
+            },
+
+            _date2: {
+                type: String
+            },
+
+            _date3: {
+                type: String
+            },
+
+            validator: {
+                type: String,
+                value: 'date-validator'
+            }
+        },
+
+        observers: [
+            '_computeValue(_date1,_date2,_date3)'
+        ],
+
+        _computeValue: function(date1, date2, date3) {
+            Polymer.dom(this.root).querySelector('#date').value = date1.trim() + '-' + date2.trim() + '-' + date3.trim();
+            this.value = date1.trim() + '-' + date2.trim() + '-' + date3.trim();
+        }
+    });
+</script>

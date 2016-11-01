@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+	layout:decorate="layout">
+<head>
+    <title th:text="#{bienvenido}"></title>
+
+    <link rel="import" href="../../js/bower/bower_components/paper-card/paper-card.html">
+    <link rel="import" href="../../js/bower/bower_components/paper-button/paper-button.html">
+
+    <style is="custom-style">
+
+        .card-tipp{
+            border: 1px solid #bebebe;
+            padding: 16px;
+            margin: 16px;
+            border-radius: 5px;
+            background-color: #fff;
+            color: #555;
+        }
+
+        .row-thin {
+            height: 27px;
+        }
+
+    </style>
+</head>
+<body>
+
+	<header layout:fragment="header">
+
+        <div class="card-tipp">
+            <div>
+                <div class="row-thin" th:text="#{bienvenido}"></div>
+                <div class="row-thin"><label th:text="#{para}"></label> <strong th:text="#{comenzar}"></strong> <label th:text="#{mensajeSiguiente}"></label></div>
+            </div>
+            <div class="card-actions">
+                <a href="form.html" th:href="@{/(form)}" style="text-decoration: none; color: inherit;">
+                    <paper-button toggles raised><iron-icon icon="book"></iron-icon><label th:text="#{siguiente}"></label></paper-button>
+                </a>
+            </div>
+        </div>
+
+    </header>
+	<div layout:fragment="content" class="container">
+	</div>
+</body>
+</html>

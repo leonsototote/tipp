@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+      layout:decorate="layout">
+<head>
+
+    <title th:text="#{mensajePestania}"></title>
+
+    <link rel="import" href="../../js/bower/bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+    <link rel="import" href="../../js/bower/bower_components/iron-demo-helpers/demo-snippet.html">
+    <link rel="import" href="../../js/bower/bower_components/iron-demo-helpers/demo-pages-shared-styles.html">
+    <link rel="import" href="../../js/bower/bower_components/paper-input/paper-input-error.html">
+    <link rel="import" href="../../js/bower/bower_components/paper-input/paper-input.html">
+    <link rel="import" href="../../js/bower/bower_components/paper-input/paper-textarea.html">
+    <link rel="import" href="../../js/bower/bower_components/paper-item/paper-item.html">
+    <link rel="import" href="../../js/bower/bower_components/paper-listbox/paper-listbox.html">
+    <link rel="import" href="../../js/bower/bower_components/paper-tabs/paper-tabs.html">
+    <link rel="import" href="../../js/bower/bower_components/paper-input/paper-input-error.html">
+    <link rel="import" href="../../js/bower/bower_components/paper-input/date-input.html">
+    <link rel="import" href="../../js/bower/bower_components/paper-radio-button/paper-radio-button.html">
+    <link rel="import" href="../../js/bower/bower_components/paper-radio-group/paper-radio-group.html">
+    <link rel="import" href="../../js/bower/bower_components/paper-checkbox/paper-checkbox.html">
+    <link rel="import" href="../../js/bower/bower_components/paper-button/paper-button.html">
+    <link rel="import" href="../../js/bower/bower_components/gold-phone-input/gold-phone-input.html">
+
+    <style is="custom-style">
+
+        h2 {
+            padding-left: 40px;
+        }
+
+        paper-checkbox {
+            height: 40px;
+            line-height: 40px;
+            white-space: nowrap;
+        }
+
+        label {
+            margin-left: 5px;
+            height: 40px;
+            line-height: 40px;
+            white-space: nowrap;
+        }
+
+        .row {
+            height: 44px;
+        }
+
+        .row-small {
+            height: 44px;
+            width: 250px;
+        }
+
+        .row-thin {
+            height: 27px;
+        }
+
+        .float-right {
+            float: right;
+        }
+
+        div[role="listbox"] {
+            border: 1px solid #e5e5e5;
+        }
+
+        .card-tipp {
+            border: 1px solid #bebebe;
+            padding: 16px;
+            margin: 16px;
+            border-radius: 5px;
+            background-color: #fff;
+            color: #555;
+        }
+
+        paper-tabs {
+            width: 400px;
+        }
+
+        .vertical-section-container {
+            max-width: 500px;
+        }
+
+        paper-dropdown-menu {
+            width: 200px;
+            margin-right: 20px;
+        }
+
+        button.no-style {
+            -webkit-appearance: none;
+            border: 0;
+            padding: 0;
+            background: transparent;
+        }
+    </style>
+
+    <script>
+        var indexSiblings = 0;
+        var indexSons = 0;
+        function _changeChecked(event,questionaryID) {
+            var parent = Polymer.dom(event).localTarget.parentElement;
+            var id = event.currentTarget.id;
+            parent.querySelector('#cb' + id).checked = !parent.querySelector('#cb' + id).checked;
+
+            var checkVal = parent.querySelector('#cb' + id).checked;
+            id = id.replace(/[0-9]/g,'');
+            var size = parseFloat(Polymer.dom(this.root).querySelector('#size'+id).textContent);
+            var total = Polymer.dom(this.root).querySelector('#total'+id+questionaryID);
+            var complete = Polymer.dom(this.root).querySelector('#complete'+id+questionaryID);
+
+            if(checkVal){
+                complete.textContent = parseFloat(complete.textContent) + size;
+                total.textContent = Number(complete.textContent).toFixed(0);
+            }else{
+                complete.textContent = parseFloat(complete.textContent) - size;
+                total.textContent = Number(complete.textContent).toFixed(0);
+            }
+
+            var por = Polymer.dom(this.root).querySelector('#porcentage'+id+questionaryID);
+            por.value = total.textContent;
+            por.textContent = total.textContent;
+
+        }
+        function _newSibling(event) {
+            var template = Polymer.dom(this.root).querySelector('#siblingsRow').content;
+            var input = template.querySelector('paper-input');
+            var name = input.attributes.name.value;
+            name = name.replace(/[0-9]/g, indexSiblings);
+            indexSiblings += 1;
+            input.attributes.name.value = name;
+            var siblingsBox = Polymer.dom(this.root).querySelector('#siblingsBox');
+            siblingsBox.appendChild(document.importNode(template, true));
+        }
+        function _newSon(event) {
+            var template = Polymer.dom(this.root).querySelector('#sonsRow').content;
+            var input = template.querySelector('paper-input');
+            var name = input.attributes.name.value;
+            name = name.replace(/[0-9]/g, indexSons);
+            indexSons += 1;
+            input.attributes.name.value = name;
+            var siblingsBox = Polymer.dom(this.root).querySelector('#sonsBox');
+            siblingsBox.appendChild(document.importNode(template, true));
+        }
+        function _selectDropdown(event) {
+            var selected = event.currentTarget.innerText;
+            Polymer.dom(this.root).querySelector('#status').value = selected;
+            if (selected === 'Casado') {
+                var couple = Polymer.dom(this.root).querySelector('#couple');
+                couple.attributes.style.value = 'display:block';
+            } else {
+                var couple = Polymer.dom(this.root).querySelector('#couple');
+                couple.attributes.style.value = 'display:none';
+            }
+        }
+    </script>
+
+</head>
+<body>
+
+<header layout:fragment="header">
+    <h2 class="rate-header" th:text="#{instruccion1}"></h2>
+</header>
+<div layout:fragment="content" class="container">
+    <form id="surveyForm"
+          is="iron-form"
+          th:action="@{/(form)}"
+          th:object="${survey}"
+          action="#"
+          method="post">
+        <div class="card-tipp">
+            <div class="card-content">
+                <h3 class="rate-header" th:text="#{antecedentes}"></h3>
+                <paper-input th:label="#{nombre}" name="name"></paper-input>
+                <paper-input th:label="#{edad}" type="number" name="age">
+                    <div suffix th:text="#{anios}"></div>
+                </paper-input>
+                <paper-input-container name="date" always-float-label auto-validate attr-for-value="value">
+                    <label th:text="#{fechaNacimiento}"></label>
+                    <date-input class="paper-input-input"></date-input>
+                    <paper-input-error th:text="#{fechaInvalida}"></paper-input-error>
+                </paper-input-container>
+                <gold-phone-input
+                        name="phone"
+                        country-code="52"
+                        th:label="#{telefono}"
+                        phone-number-pattern="XX-XX-XX-XX-XX"
+                        auto-validate
+                        maxlength="14">
+                </gold-phone-input>
+                <gold-phone-input
+                        name="cellphone"
+                        country-code="52"
+                        th:label="#{celular}"
+                        phone-number-pattern="XX-XX-XX-XX-XX"
+                        auto-validate
+                        maxlength="14">
+                </gold-phone-input>
+                <input is="iron-input" name="status" id="status" style="display: none">
+                <paper-dropdown-menu th:label="#{estadoCivil}">
+                    <paper-listbox class="dropdown-content">
+                        <paper-item onclick="_selectDropdown(event)" value="Soltero" th:text="#{soltero}"></paper-item>
+                        <paper-item onclick="_selectDropdown(event)" value="Casado" th:text="#{casado}"></paper-item>
+                        <paper-item onclick="_selectDropdown(event)" value="Divorsiado" th:text="#{divorsiado}"></paper-item>
+                    </paper-listbox>
+                </paper-dropdown-menu>
+                <paper-input th:label="#{pareja}" id="couple" name="couple" style="display: none"></paper-input>
+                <div id="siblingsBox" role="listbox" style="margin-bottom: 10px;">
+                    <label th:text="#{hermanos}"> </label>
+                    <paper-icon-button icon="add" title="add" onclick="_newSibling(event)">></paper-icon-button>
+                    <template id="siblingsRow">
+                        <paper-input name="siblings[0]" th:label="#{nombreHermano}" style="margin-left: 5px"></paper-input>
+                    </template>
+                </div>
+                <div id="sonsBox" role="listbox">
+                    <label th:text="#{hijos}"> </label>
+                    <paper-icon-button icon="add" title="add" onclick="_newSon(event)"></paper-icon-button>
+                    <template id="sonsRow">
+                        <paper-input name="sons[0]" th:label="#{nombreHijo}" style="margin-left: 5px"></paper-input>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-tipp">
+            <div class="card-content">
+                <h3 class="rate-header" th:text="#{datos}"></h3>
+                <paper-textarea th:label="#{pregunta1}"></paper-textarea>
+                <paper-textarea th:label="#{pregunta2}"></paper-textarea>
+                <paper-textarea th:label="#{pregunta3}"></paper-textarea>
+                <paper-textarea th:label="#{pregunta4}"></paper-textarea>
+                <paper-textarea th:label="#{pregunta5}"></paper-textarea>
+                <paper-textarea th:label="#{pregunta6}"></paper-textarea>
+            </div>
+        </div>
+
+        <h2 class="rate-header" th:text="#{filtrosSensoriales}"></h2>
+
+        <div th:each="questionary,statusQuestionary : ${survey.sectionSensitives}" class="card-tipp">
+            <div class="card-content">
+                <h3 class="rate-header" th:text="${questionary.title}">questionary.title</h3>
+                <div role="listbox">
+                    <div class="row">
+                        <div class="float-right" style="padding: 12px 6px" th:text="#{cierto}"></div>
+                    </div>
+                    <div th:each="question,statusQuestion : ${questionary.questions}" class="row">
+                        <label th:text="${statusQuestion.index+1}+'. '+${question.question}">question</label>
+                        <div class="float-right">
+                            <paper-checkbox raised
+                                            th:onclick="'javascript:_changeChecked(event,'+${statusQuestionary.index}+')'"
+                                            th:id="'radio'+${statusQuestion.index}"
+                                            style="padding-right: 14px;
+                                                   display:inline-block;">
+                            </paper-checkbox>
+                            <input type="checkbox"
+                                   th:field="*{sectionSensitives[__${statusQuestionary.index}__].questions[__${statusQuestion.index}__].answerBoolean}"
+                                   th:id="'cbradio'+${statusQuestion.index}"
+                                   style="display:none;">
+                            <label id="sizeradio" style="display: none" th:text="100/${statusQuestion.size}"></label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="float-right" style="padding: 12px 6px"><strong style="display: none" th:id="'completeradio'+${statusQuestionary.index}">0</strong><label th:text="#{total}"> </label> <strong th:id="'totalradio'+${statusQuestionary.index}">0</strong> %<label></label></div>
+                    </div>
+                    <input th:field="*{sectionSensitives[__${statusQuestionary.index}__].porcentage}"
+                           th:name="'sectionSensitives['+${statusQuestionary.index}+'].porcentage'"
+                           th:id="'porcentageradio'+${statusQuestionary.index}"
+                           style="display:none;">
+                </div>
+            </div>
+        </div>
+
+        <h2 class="rate-header" th:text="#{procesosCognitivos}"></h2>
+
+        <div th:each="questionary,statusQuestionary : ${survey.sectionCognitive}" class="card-tipp">
+            <div class="card-content">
+                <h3 class="rate-header" th:text="${questionary.title}">questionary.title</h3>
+                <div role="listbox" >
+                    <div class="row">
+                        <div class="float-right" style="padding: 12px 6px" th:text="#{cierto}"></div>
+                    </div>
+                    <div th:each="question,statusQuestion : ${questionary.questions}" class="row">
+
+                        <label th:if="${!question.flagWordQuestion}" th:text="${statusQuestion.count}+'. '+${question.question}">question</label>
+                        <div class="float-right" th:if="${!question.flagWordQuestion}">
+                            <paper-checkbox raised
+                                            th:onclick="'javascript:_changeChecked(event,'+${statusQuestionary.index}+')'"
+                                            th:id="'cradio'+${statusQuestion.index}"
+                                            style="padding-right: 14px;
+                                                   display:inline-block;">
+                            </paper-checkbox>
+                            <input type="checkbox"
+                                   th:field="*{sectionCognitive[__${statusQuestionary.index}__].questions[__${statusQuestion.index}__].answerBoolean}"
+                                   th:id="'cbcradio'+${statusQuestion.index}"
+                                   style="display:none;">
+                            <label id="sizecradio" style="display: none" th:text="100/${statusQuestion.size}"></label>
+                        </div>
+                        <table th:if="${question.flagWordQuestion}">
+                            <tr>
+                                <td style="width: 200px;"><label th:text="${statusQuestion.count}+'. '+${question.wordQuestion}">question</label></td>
+                                <td>
+                                    <paper-checkbox raised
+                                                    th:onclick="'javascript:_changeChecked(event,'+${statusQuestionary.index}+')'"
+                                                    th:id="'cradio'+${statusQuestion.index}"
+                                                    style="padding-right: 14px;
+                                                   display:inline-block;">
+                                    </paper-checkbox>
+                                    <input type="checkbox"
+                                           th:field="*{sectionCognitive[__${statusQuestionary.index}__].questions[__${statusQuestion.index}__].answerBoolean}"
+                                           th:id="'cbcradio'+${statusQuestion.index}"
+                                           style="display:none;">
+                                    <label id="sizecradio" style="display: none" th:text="100/${statusQuestion.size}"></label>
+                                </td>
+                            </tr>
+                        </table>
+
+                    </div>
+                    <div class="row">
+                        <div class="float-right" style="padding: 12px 6px"><strong style="display: none" th:id="'completecradio'+${statusQuestionary.index}">0</strong><label th:text="#{total}"> </label> <strong th:id="'totalcradio'+${statusQuestionary.index}">0</strong> %<label></label></div>
+                    </div>
+                    <input th:field="*{sectionCognitive[__${statusQuestionary.index}__].porcentage}"
+                           th:name="'sectionCognitive['+${statusQuestionary.index}+'].porcentage'"
+                           th:id="'porcentagecradio'+${statusQuestionary.index}"
+                           style="display:none;">
+                </div>
+            </div>
+        </div>
+
+        <h2 class="rate-header" th:text="#{inteligenciasMultiples}"></h2>
+
+        <div th:each="questionary,statusQuestionary : ${survey.sectionIntelligence}" class="card-tipp">
+            <div class="card-content">
+                <h3 class="rate-header" th:text="${questionary.title}">questionary.title</h3>
+                <div role="listbox">
+                    <div class="row">
+                        <div class="float-right" style="padding: 12px 6px" th:text="#{cierto}"></div>
+                    </div>
+                    <div th:each="question,statusQuestion : ${questionary.questions}" class="row">
+                        <label th:text="${statusQuestion.count}+'. '+${question.question}">question</label>
+                        <div class="float-right">
+                            <paper-checkbox raised
+                                            th:onclick="'javascript:_changeChecked(event,'+${statusQuestionary.index}+')'"
+                                            th:id="'mradio'+${statusQuestion.index}"
+                                            style="padding-right: 14px;
+                                                   display:inline-block;">
+                            </paper-checkbox>
+                            <input type="checkbox"
+                                   th:field="*{sectionIntelligence[__${statusQuestionary.index}__].questions[__${statusQuestion.index}__].answerBoolean}"
+                                   th:id="'cbmradio'+${statusQuestion.index}"
+                                   style="display:none;">
+                            <label id="sizemradio" style="display: none" th:text="100/${statusQuestion.size}"></label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="float-right" style="padding: 12px 6px"><strong style="display: none" th:id="'completemradio'+${statusQuestionary.index}">0</strong><label th:text="#{total}"> </label> <strong th:id="'totalmradio'+${statusQuestionary.index}">0</strong> %<label></label></div>
+                    </div>
+                    <input th:field="*{sectionIntelligence[__${statusQuestionary.index}__].porcentage}"
+                           th:name="'sectionIntelligence['+${statusQuestionary.index}+'].porcentage'"
+                           th:id="'porcentagemradio'+${statusQuestionary.index}"
+                           style="display:none;">
+                </div>
+            </div>
+        </div>
+
+        <h2 class="rate-header" th:text="#{perfilesContacto}"></h2>
+
+        <div th:each="questionary,statusQuestionary : ${survey.sectionContac}" class="card-tipp">
+            <div class="card-content">
+                <h3 class="rate-header" th:text="${questionary.title}">questionary.title</h3>
+                <div role="listbox">
+                    <div class="row">
+                        <div class="float-right" style="padding: 12px 6px" th:text="#{cierto}"></div>
+                    </div>
+                    <div th:each="question,statusQuestion : ${questionary.questions}" class="row">
+                        <label th:text="${statusQuestion.count}+'. '+${question.question}">question</label>
+                        <div class="float-right">
+                            <paper-checkbox raised
+                                            th:onclick="'javascript:_changeChecked(event,'+${statusQuestionary.index}+')'"
+                                            th:id="'coradio'+${statusQuestion.index}"
+                                            style="padding-right: 14px;
+                                                   display:inline-block;">
+                            </paper-checkbox>
+                            <input type="checkbox"
+                                   th:field="*{sectionContac[__${statusQuestionary.index}__].questions[__${statusQuestion.index}__].answerBoolean}"
+                                   th:id="'cbcoradio'+${statusQuestion.index}"
+                                   style="display:none;">
+                            <label id="sizecoradio" style="display: none" th:text="100/${statusQuestion.size}"></label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="float-right" style="padding: 12px 6px"><strong style="display: none" th:id="'completecoradio'+${statusQuestionary.index}">0</strong><label th:text="#{total}"> </label> <strong th:id="'totalcoradio'+${statusQuestionary.index}">0</strong> %<label></label></div>
+                    </div>
+                    <input th:field="*{sectionContac[__${statusQuestionary.index}__].porcentage}"
+                           th:name="'sectionContac['+${statusQuestionary.index}+'].porcentage'"
+                           th:id="'porcentagecoradio'+${statusQuestionary.index}"
+                           style="display:none;">
+                </div>
+            </div>
+        </div>
+
+        <h2 class="rate-header" th:text="#{perfilPersonalidad}"></h2>
+
+        <div th:each="questionary,statusQuestionary : ${survey.sectionsProfile}" class="card-tipp">
+            <div class="card-content">
+                <h3 class="rate-header" th:text="${questionary.title}">${questionary.title}</h3>
+                <p th:text="${questionary.title}">${questionary.title}</p>
+                <div class="row">
+                    <label th:text="${questionary.details1}">${questionary.details1}</label>
+                    <label class="float-right" th:text="${questionary.details2}">${questionary.details2}</label>
+                </div>
+                <div role="listbox">
+                    <div th:each="question,statusQuestion : ${questionary.questions}" class="row">
+                        <label th:text="${statusQuestion.count}+'. '+${question.question}">${status.index}. ${question}</label>
+                        <paper-checkbox class="float-right"
+                                        th:onclick="'javascript:_changeChecked(event,'+${statusQuestionary.index}+')'"
+                                        th:id="'radiopp'+${statusQuestion.index}"
+                                        style="padding-right: 14px;">
+                        </paper-checkbox>
+                        <input type="checkbox"
+                               th:field="*{sectionsProfile[__${statusQuestionary.index}__].questions[__${statusQuestion.index}__].answerBoolean}"
+                               th:id="'cbradiopp'+${statusQuestion.index}"
+                               style="display:none;">
+                        <label id="sizeradiopp" style="display: none" th:text="100/${statusQuestion.size}"></label>
+                    </div>
+                    <div class="row">
+                        <div class="float-right" style="padding: 12px 6px"><strong style="display: none" th:id="'completeradiopp'+${statusQuestionary.index}">0</strong><label th:text="#{total}"> </label> <strong th:id="'totalradiopp'+${statusQuestionary.index}">0</strong> %<label></label></div>
+                    </div>
+                    <input th:field="*{sectionsProfile[__${statusQuestionary.index}__].porcentage}"
+                           th:name="'sectionsProfile['+${statusQuestionary.index}+'].porcentage'"
+                           th:id="'porcentageradiopp'+${statusQuestionary.index}"
+                           style="display:none;">
+                </div>
+            </div>
+        </div>
+
+        <h2 class="rate-header" th:text="#{fortalezas}"></h2>
+
+        <div th:each="questionary,statusQuestionary : ${survey.sectionsStrengths}" class="card-tipp">
+            <div class="card-content">
+                <div role="listbox" >
+                    <div th:each="question,statusQuestion : ${questionary.questions}" class="row-small" style="display:inline-flex;">
+
+                        <table th:if="${question.flagWordQuestion}">
+                            <tr>
+                                <td style="width: 170px;"><label th:text="${statusQuestion.count}+'. '+${question.wordQuestion}">question</label></td>
+                                <td>
+                                    <paper-checkbox raised
+                                                    th:onclick="'javascript:_changeChecked(event,'+${statusQuestionary.index}+')'"
+                                                    th:id="'stradio'+${statusQuestion.index}"
+                                                    style="padding-right: 14px;
+                                                    display:inline-block;">
+                                    </paper-checkbox>
+                                    <input type="checkbox"
+                                           th:field="*{sectionsStrengths[__${statusQuestionary.index}__].questions[__${statusQuestion.index}__].answerBoolean}"
+                                           th:id="'cbstradio'+${statusQuestion.index}"
+                                           style="display:none;">
+                                    <label id="sizestradio" style="display: none" th:text="100/${statusQuestion.size}"></label>
+                                </td>
+                            </tr>
+                        </table>
+                        <br th:if="${statusQuestion.count%4 == 0}"/>
+                    </div>
+                    <div class="row">
+                        <div class="float-right" style="padding: 12px 6px"><strong style="display: none" th:id="'completestradio'+${statusQuestionary.index}">0</strong><label th:text="#{total}"> </label> <strong th:id="'totalstradio'+${statusQuestionary.index}">0</strong> %<label></label></div>
+                    </div>
+                    <input th:field="*{sectionsStrengths[__${statusQuestionary.index}__].porcentage}"
+                           th:name="'sectionsStrengths['+${statusQuestionary.index}+'].porcentage'"
+                           th:id="'porcentagetradio'+${statusQuestionary.index}"
+                           style="display:none;">
+                </div>
+            </div>
+        </div>
+
+        <h2 class="rate-header" th:text="#{rasgosAutoestima}"></h2>
+
+        <div th:each="questionary,statusQuestionary : ${survey.sectionsTraits}" class="card-tipp">
+            <div class="card-content">
+                <h3 class="rate-header" th:text="${questionary.title}">questionary.title</h3>
+                <div role="listbox">
+                    <div class="row">
+                        <div class="float-right" style="padding: 12px 6px" th:text="#{cierto}"></div>
+                    </div>
+                    <div th:each="question,statusQuestion : ${questionary.questions}" class="row">
+                        <label th:text="${statusQuestion.index+1}+'. '+${question.question}">question</label>
+                        <div class="float-right">
+                            <paper-checkbox raised
+                                            th:onclick="'javascript:_changeChecked(event,'+${statusQuestionary.index}+')'"
+                                            th:id="'trradio'+${statusQuestion.index}"
+                                            style="padding-right: 14px;
+                                                   display:inline-block;">
+                            </paper-checkbox>
+                            <input type="checkbox"
+                                   th:field="*{sectionsTraits[__${statusQuestionary.index}__].questions[__${statusQuestion.index}__].answerBoolean}"
+                                   th:id="'cbtrradio'+${statusQuestion.index}"
+                                   style="display:none;">
+                            <label id="sizetrradio" style="display: none" th:text="100/${statusQuestion.size}"></label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="float-right" style="padding: 12px 6px"><strong style="display: none" th:id="'completetrradio'+${statusQuestionary.index}">0</strong><label th:text="#{total}"> </label> <strong th:id="'totaltrradio'+${statusQuestionary.index}">0</strong> %<label></label></div>
+                    </div>
+                    <input th:field="*{sectionsTraits[__${statusQuestionary.index}__].porcentage}"
+                           th:name="'sectionsTraits['+${statusQuestionary.index}+'].porcentage'"
+                           th:id="'porcentagetrradio'+${statusQuestionary.index}"
+                           style="display:none;">
+                </div>
+            </div>
+        </div>
+
+        <div class="card-tipp">
+            <div class="card-content">
+                <h3 class="rate-header" th:text="#{conclusiones}"></h3>
+                <paper-textarea name="answer1" th:label="#{perfilContacto}"></paper-textarea>
+                <paper-textarea name="answer2" th:label="#{personalidad}"></paper-textarea>
+                <paper-textarea name="answer3" th:label="#{fortalezasTag}"></paper-textarea>
+                <paper-textarea name="answer4" th:label="#{analisis}"></paper-textarea>
+            </div>
+        </div>
+
+        <div class="card-tipp">
+            <div>
+                <div class="row-thin" th:text="#{listo}"></div>
+                <div class="row-thin"><label th:text="#{para}"></label> <strong th:text="#{terminar}"></strong> <label th:text="#{descargarMensaje}"></label></div>
+            </div>
+            <div class="card-actions">
+                <a href="form.html" th:href="@{/(form)}" style="text-decoration: none; color: inherit;">
+                    <button type="submit" class="no-style">
+                        <paper-button toggles raised>
+                            <iron-icon icon="file-download"></iron-icon>
+                            <label th:text="#{descargar}"></label>
+                        </paper-button>
+                    </button>
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+</html>

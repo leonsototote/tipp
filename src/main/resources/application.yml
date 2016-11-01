@@ -1,0 +1,17 @@
+survey:
+    name: test
+    sectionSensitives:
+        - title: test1
+          comment: true
+          questions:
+              - question: question1
+                wordQuestion: wordQuestion1
+              - question: question2
+                wordQuestion: wordQuestion2
+        - title: test2
+          comment: true
+          questions:
+              - question: question21
+                wordQuestion: wordQuestion21
+              - question: question2
+                wordQuestion: wordQuestion22
